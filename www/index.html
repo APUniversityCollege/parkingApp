@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width'>
+    <title>Parking App</title>
+
+    <link href='lib/css/ionic.min.css' rel='stylesheet'>
+    <link href='css/app.css' rel='stylesheet'>
+    <link href='lib/css/leaflet.css' rel='stylesheet'>
+
+    <script src='lib/js/ionic.min.js'></script>
+    <script src='lib/js/angular/angular.js'></script>
+    <script src='lib/js/angular/angular-animate.min.js'></script>
+    <script src='lib/js/angular/angular-sanitize.min.js'></script>
+    <script src='lib/js/angular-ui/angular-ui-router.min.js'></script>
+    <script src='lib/js/ionic-angular.min.js'></script>
+    <script src='cordova.js'></script>
+    <script src='lib/js/leaflet/leaflet.js'></script>
+    <script src='js/angular-leaflet-directive.min.js'></script>
+    <script src='js/app.js'></script>
+    <script src='js/services.js'></script>
+    <script src='js/controllers.js'></script>
+  </head>
+  <body ng-app='parkingapp' animation='slide-left-right-ios7'>
+    <div class='bar bar-header bar-calm' onclick='locate();' id='title'></div>
+    <nav-view></nav-view>
+  </body>
+</html>
