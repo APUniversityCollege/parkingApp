@@ -1,6 +1,6 @@
 angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 
-.controller('MapController', function($scope, $rootScope, $timeout, StorageService, AddressService, ZoneService){
+.controller('MapController', function($scope, $rootScope, $timeout, StorageService, AddressService, ZoneService, TariffService){
 	/*var center = StorageService.getObject('center');
 	// defaults to 'grote markt'
 	if(JSON.stringify(center) == '{}') {
@@ -149,13 +149,14 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 				break;
 			}
 		}
-		
+
 		AddressService.getAddress(lat, lng).then(function(data) {
 			if (data.address.neighbourhood != undefined && tariff != undefined) {
+				var tarief = TariffService.getTariffText(tariff);
 				var marker = {
 					lat: lat,
 					lng: lng,
-					message: data.address.neighbourhood + ' / ' + tariff,
+					message: data.address.neighbourhood + ' / ' + tarief,
 					focus: true,
 					draggable: false
 				};
@@ -163,10 +164,11 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 				markerCount++;
 			}
 			else if (data.address.city_district != undefined && tariff != undefined) {
+				var tarief = TariffService.getTariffText(tariff);
 				var marker = {
 					lat: lat,
 					lng: lng,
-					message: data.address.city_district + ' / ' + tariff,
+					message: data.address.city_district + ' / ' + tarief,
 					focus: true,
 					draggable: false
 				};
@@ -174,6 +176,7 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 				markerCount++;
 			}
 		});
+		
 	};
 })
 

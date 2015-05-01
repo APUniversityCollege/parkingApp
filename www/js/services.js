@@ -36,24 +36,55 @@ angular.module('parkingapp.services', [])
 
 .factory('TariffService', function() {
 	//["Rood", "Lichtgroen", "Donkergroen", "Geel", "Oranje", "Blauw"]
-	var tariffs = [
-		{'kleur': 'Rood', 'max': 3, 'start': 9, 'einde': 22, 'dagen': ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
+	var tarieven = [
+		{'kleur': 'Rood', 'max': 3, 'start': 9, 'einde': 22, 'dagen': [0, 1, 2, 3, 4, 5],
 		'tarief': [1.60, 2.70, 3.80]},
-		{'kleur': 'Donkergroen', 'max': 10, 'start': 9, 'einde': 19, 'dagen': ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
+		{'kleur': 'Donkergroen', 'max': 10, 'start': 9, 'einde': 19, 'dagen': [0, 1, 2, 3, 4, 5],
 		'tarief': [0.70, 1.10], 'dagticket': 3.80},
-		{'kleur': 'Lichtgroen', 'max': 10, 'start': 9, 'einde': 19, 'dagen': ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
+		{'kleur': 'Lichtgroen', 'max': 10, 'start': 9, 'einde': 19, 'dagen': [0, 1, 2, 3, 4, 5],
 		'tarief': [0.70, 1.10]},
-		{'kleur': 'Geel', 'max': 10, 'start': 9, 'einde': 19, 'dagen': ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
+		{'kleur': 'Geel', 'max': 10, 'start': 9, 'einde': 19, 'dagen': [0, 1, 2, 3, 4, 5],
 		'tarief': [0.50]},
-		{'kleur': 'Oranje', 'max': 10, 'start': 9, 'einde': 19, 'dagen': ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
+		{'kleur': 'Oranje', 'max': 10, 'start': 9, 'einde': 19, 'dagen': [0, 1, 2, 3, 4, 5],
 		'tarief': [0.50], 'dagticket': 2.70},
-		{'kleur': 'Blauw', 'max': 2, 'start': 9, 'einde': 18, 'dagen': ['maandag', 'dinsdag', 'woensdag', 'donderdag', 'vrijdag', 'zaterdag'],
+		{'kleur': 'Blauw', 'max': 2, 'start': 9, 'einde': 18, 'dagen': [0, 1, 2, 3, 4, 5],
 		'tarief': [0]}
 	];
 	
 	return {
-		getTariff: function(zone) {
-			
+		getTariffText: function(zone) {
+			var tarief;
+			$.each(tarieven, function(key, value) {
+				if (zone == value.kleur) {
+					tarief = value;
+					return false;
+				}
+			});
+			var text = tarief.kleur;
+			var now = new Date();
+			if ($.inArray(now.getDay(), tarief.dagen)) {
+				if (now.getHours() >= tarief.start && now.getHours() < tarief.einde) {
+					var duration = tarief.einde - now.getHours();
+					var cost = 0;
+					if (duration > tarief.max) { duration = tarief.max; }
+					for (var i = 0; i < duration; i++) {
+						if (i < tarief.tarief.length) {
+							cost += tarief.tarief[i];
+						}
+						else {
+							cost += tarief.tarief[tarief.tarief.length-1];
+						}
+					}
+					if (tarief.dagticket < cost) {
+						text += '<br/>Neem een dagticket voor maar € ' + tarief.dagticket.toFixed(2);
+					}
+					else {
+						text += '<br/>Maximale parkeerduur: ' + duration;
+						text += '<br/>Maximale kostprijs: € ' + cost.toFixed(2);
+					}
+				}
+			}
+			return text;
 		}
 	}
 })
