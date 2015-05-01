@@ -134,7 +134,6 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 			}
 			lastPoint = point;
 		}
-		//console.log(isInside);
 		return isInside;
 	};
 
@@ -142,27 +141,32 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 		var lat = locationEvent.leafletEvent.latlng.lat;
 		var lng = locationEvent.leafletEvent.latlng.lng;
 		var tariff;
-		//console.log(zones);
 		for (var i = 0; i < zones.length; i++) {
-			if( i == 1) {
-			console.log(zones[i]);}
 			var geo = JSON.parse(zones[i].geometry);
 			var coordinates = geo.coordinates[0];
-			console.log(coordinates);
 			if (inPolygon([lng, lat], coordinates)) {
 				tariff = zones[i].tariefkleur;
-				//console.log(tariff);
 				break;
 			}
 		}
 		
 		AddressService.getAddress(lat, lng).then(function(data) {
-			if (data.address.road != undefined) {
-				console.log(data.address);
+			if (data.address.neighbourhood != undefined && tariff != undefined) {
 				var marker = {
 					lat: lat,
 					lng: lng,
-					message: data.address.road + ' / ' + tariff,
+					message: data.address.neighbourhood + ' / ' + tariff,
+					focus: true,
+					draggable: false
+				};
+				$scope.map.markers[markerCount] = marker;
+				markerCount++;
+			}
+			else if (data.address.city_district != undefined && tariff != undefined) {
+				var marker = {
+					lat: lat,
+					lng: lng,
+					message: data.address.city_district + ' / ' + tariff,
 					focus: true,
 					draggable: false
 				};
