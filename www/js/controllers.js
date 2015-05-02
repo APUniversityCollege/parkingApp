@@ -1,13 +1,6 @@
 angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 
 .controller('MapController', function($scope, $rootScope, $timeout, StorageService, AddressService, ZoneService, TariffService){
-	/*var center = StorageService.getObject('center');
-	// defaults to 'grote markt'
-	if(JSON.stringify(center) == '{}') {
-		center.lat = 51.221311;
-		center.lng = 4.399160;
-	}*/
-	
 	var c = {};
 	if($rootScope.foundAddress){
 		c = $rootScope.foundAddress;
@@ -17,14 +10,10 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 		c.lng = 4.399160;
 	}
 	
+	$scope.map = new L.Map('map'); 
 	
-	var map = {
-		defaults: {
-			// MapQuest
-			tileLayer: 'http://otile4.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png',
-			// OpenStreetMap
-			//tileLayer: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
-			maxZoom: 20,
+	L.tileLayer('http://otile4.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png', {
+            maxZoom: 20,
 			zoomControl: false,
 			doubleClickZoom: false,
 			scrollWheelZoom: true,
@@ -33,18 +22,13 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 				weight: 10,
 				color: '#800000',
 				opacity: 1
-			}
-		},
-		//markers: StorageService.getObject('mapMarkers'),
-		markers: [],
-		center: {
-			lat: c.lat,
-			lng: c.lng,
-			zoom: 17
-		}
-	};
-
-	$scope.map = map;
+			},
+			markers: []
+         }).addTo($scope.map);
+         
+    $scope.map.attributionControl.setPrefix('');
+    $scope.map.setView(new L.LatLng(c.lat, c.lng), 17);
+	
 	var markerCount = 0;
 	// Request object parkingZones from StorageService
 	// If the object does not yet exist, then pull it from server
@@ -53,12 +37,55 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 		ZoneService.getZones().then(function(z) {
 			zones = z;
 			StorageService.setObject('parkingZones', zones);
-			console.log(zones);
 		});
 	}
 
+	// Colour the parking zones
+	for(var i = 0; i < zones.length; i++){
+		console.log(zones[i].tariefkleur);
+		var coordinates = JSON.parse(zones[i].geometry).coordinates[0];
+		var polygonPoints = [];
+		for(var j = 0; j < coordinates.length; j++){
+			polygonPoints.push(new L.LatLng(coordinates[j][1], coordinates[j][0]));
+		}
+		var colour = '';
+		switch(zones[i].tariefkleur){
+			case 'Rood':
+				colour = 'red';
+				fillColour = '#f03';
+				break;
+			case 'Lichtgroen':
+				colour = 'lightgreen';
+				fillColour = '#33FF33';
+				break;
+			case 'Donkergroen':
+				colour = 'darkgreen';
+				fillColour = '#336633';
+				break;
+			case 'Geel':
+				colour = 'yellow';
+				fillColour = '#FFFF33';
+				break;
+			case 'Oranje':
+				colour = 'orange';
+				fillColour = '#FF9933';
+				break;
+			case 'Blauw':
+				colour = 'blue';
+				fillColour = '#3366FF';
+				break;
+		}
+        var polygon = new L.Polygon(polygonPoints,{
+    		color: colour,
+    		fillColor: fillColour,
+    		fillOpacity: 0.5
+		});
+        $scope.map.addLayer(polygon);
+	}
+	
 	// normal click
 	$scope.$on('leafletDirectiveMap.click', function(event, locationEvent){
+		console.log('OK');
 		setTimeout(addMarker(locationEvent), 1000);
 	});
 
@@ -91,7 +118,7 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 			StorageService.setObject('center', center);
 		}, function(err){ console.log(err); });
 	};
-
+	
 	/* http://alienryderflex.com/polygon/
 	The basic idea is to find all edges of the polygon that span the 'x' position of the point you're testing against. 
 	Then you find how many of them intersect the vertical line that extends above your point. If an even number cross above the point, 
