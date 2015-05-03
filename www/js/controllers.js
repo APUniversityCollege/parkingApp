@@ -88,19 +88,15 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 	}
 	
 	// normal click
-	$scope.$on('leafletDirectiveMap.click', function(event, locationEvent){
-		setTimeout(addMarker(locationEvent), 1000);
+	$scope.map.on('click', function(e){
+		addMarker(e);
 	});
 
 	// double click
-	// $scope.$on('leafletDirectiveMap.dblclick', function(event, locationEvent){ });
+	// $scope.map.on('dblclick', function(event, locationEvent){ });
 
 	// right-click
-	$scope.$on('leafletDirectiveMap.contextmenu', function(event, locationEvent){
-		$scope.map.markers = [];
-    	$scope.markerCount = 0;
-    	StorageService.setObject('mapMarkers', $scope.map.markers);
-	});
+	//$scope.map.on('contextmenu', function(e){ });
 
 	setTitle = function(msg){
 		document.getElementById('title').innerHTML = '<h1 class="title">' + msg + '</h1>';
@@ -110,7 +106,7 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 		setTitle('Even geduld, positie wordt bepaald...');
 		navigator.geolocation.getCurrentPosition(function(position){
 			var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo($scope.map);
-			marker.bindPopup('<b>You are here!</b>').openPopup();
+			marker.bindPopup('<b>U bent hier</b>').openPopup();
 			setTitle('');
 		}, function(err){ console.log(err); });
 	};
@@ -160,11 +156,12 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 		return isInside;
 	};
 
-	addMarker = function(locationEvent) {
-		var lat = locationEvent.leafletEvent.latlng.lat;
-		var lng = locationEvent.leafletEvent.latlng.lng;
+	addMarker = function(e) {
+		var lat = e.latlng.lat;
+		var lng = e.latlng.lng;
 		var tariff;
-		for (var i = 0; i < zones.length; i++) {
+		var popup = L.popup();
+		for(var i = 0; i < zones.length; i++) {
 			var geo = JSON.parse(zones[i].geometry);
 			var coordinates = geo.coordinates[0];
 			if (inPolygon([lng, lat], coordinates)) {
@@ -174,32 +171,18 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 		}
 
 		AddressService.getAddress(lat, lng).then(function(data) {
-			if (data.address.neighbourhood != undefined && tariff != undefined) {
+			if(data.address.neighbourhood != undefined && tariff != undefined) {
 				var tarief = TariffService.getTariffText(tariff);
-				var marker = {
-					lat: lat,
-					lng: lng,
-					message: data.address.neighbourhood + ' / ' + tarief,
-					focus: true,
-					draggable: false
-				};
-				$scope.map.markers[markerCount] = marker;
-				markerCount++;
+				popup.setLatLng(e.latlng).setContent(data.address.neighbourhood + ' : ' + tarief).openOn($scope.map);
 			}
-			else if (data.address.city_district != undefined && tariff != undefined) {
+			else if(data.address.city_district != undefined && tariff != undefined) {
 				var tarief = TariffService.getTariffText(tariff);
-				var marker = {
-					lat: lat,
-					lng: lng,
-					message: data.address.city_district + ' / ' + tarief,
-					focus: true,
-					draggable: false
-				};
-				$scope.map.markers[markerCount] = marker;
-				markerCount++;
+				popup.setLatLng(e.latlng).setContent(data.address.city_district + ' : ' + tarief).openOn($scope.map);
 			}
+			else {
+				popup.setLatLng(e.latlng).setContent('Geen tarief').openOn($scope.map);
+			}		
 		});
-		
 	};
 })
 
