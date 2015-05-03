@@ -11,7 +11,6 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 	}
 	
 	$scope.map = new L.Map('map'); 
-	
 	L.tileLayer('http://otile4.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png', {
             maxZoom: 20,
 			zoomControl: false,
@@ -22,14 +21,12 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 				weight: 10,
 				color: '#800000',
 				opacity: 1
-			},
-			markers: []
+			}
          }).addTo($scope.map);
          
     $scope.map.attributionControl.setPrefix('');
-    $scope.map.setView(new L.LatLng(c.lat, c.lng), 17);
+    $scope.map.setView(new L.LatLng(c.lat, c.lng), 12);
 	
-	var markerCount = 0;
 	// Request object parkingZones from StorageService
 	// If the object does not yet exist, then pull it from server
 	var zones = StorageService.getObject('parkingZones');
@@ -37,55 +34,61 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 		ZoneService.getZones().then(function(z) {
 			zones = z;
 			StorageService.setObject('parkingZones', zones);
+			colourParkingZones(z);
 		});
+	}
+	else{
+		colourParkingZones(zones);
 	}
 
 	// Colour the parking zones
-	for(var i = 0; i < zones.length; i++){
-		console.log(zones[i].tariefkleur);
-		var coordinates = JSON.parse(zones[i].geometry).coordinates[0];
-		var polygonPoints = [];
-		for(var j = 0; j < coordinates.length; j++){
-			polygonPoints.push(new L.LatLng(coordinates[j][1], coordinates[j][0]));
+	function colourParkingZones(zones){
+		for(var i = 0; i < zones.length; i++){
+			//console.log(zones[i].tariefkleur);
+			var coordinates = JSON.parse(zones[i].geometry).coordinates[0];
+			var polygonPoints = [];
+			for(var j = 0; j < coordinates.length; j++){
+				polygonPoints.push(new L.LatLng(coordinates[j][1], coordinates[j][0]));
+			}
+			var colour = '';
+			var fillColour = '';
+			switch(zones[i].tariefkleur){
+				case 'Rood':
+					colour = 'red';
+					fillColour = '#f03';
+					break;
+				case 'Lichtgroen':
+					colour = 'lightgreen';
+					fillColour = '#33FF33';
+					break;
+				case 'Donkergroen':
+					colour = 'darkgreen';
+					fillColour = '#336633';
+					break;
+				case 'Geel':
+					colour = 'yellow';
+					fillColour = '#FFFF33';
+					break;
+				case 'Oranje':
+					colour = 'orange';
+					fillColour = '#FF9933';
+					break;
+				case 'Blauw':
+					colour = 'blue';
+					fillColour = '#3366FF';
+					break;
+			}
+			var polygon = new L.Polygon(polygonPoints,{
+				color: colour,
+				fillColor: fillColour,
+				fillOpacity: 0.5
+			});
+			$scope.map.addLayer(polygon);
 		}
-		var colour = '';
-		switch(zones[i].tariefkleur){
-			case 'Rood':
-				colour = 'red';
-				fillColour = '#f03';
-				break;
-			case 'Lichtgroen':
-				colour = 'lightgreen';
-				fillColour = '#33FF33';
-				break;
-			case 'Donkergroen':
-				colour = 'darkgreen';
-				fillColour = '#336633';
-				break;
-			case 'Geel':
-				colour = 'yellow';
-				fillColour = '#FFFF33';
-				break;
-			case 'Oranje':
-				colour = 'orange';
-				fillColour = '#FF9933';
-				break;
-			case 'Blauw':
-				colour = 'blue';
-				fillColour = '#3366FF';
-				break;
-		}
-        var polygon = new L.Polygon(polygonPoints,{
-    		color: colour,
-    		fillColor: fillColour,
-    		fillOpacity: 0.5
-		});
-        $scope.map.addLayer(polygon);
 	}
 	
 	// normal click
 	$scope.$on('leafletDirectiveMap.click', function(event, locationEvent){
-		console.log('OK');
 		setTimeout(addMarker(locationEvent), 1000);
 	});
 
@@ -106,16 +109,9 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 	locate = function(){
 		setTitle('Even geduld, positie wordt bepaald...');
 		navigator.geolocation.getCurrentPosition(function(position){
-			var center = {
-				lat: position.coords.latitude,
-				lng: position.coords.longitude,
-				zoom : 17
-			};
-			$timeout(function(){
-        		$scope.map.center = center;
-        		setTitle('');
-    		}, 3000);
-			StorageService.setObject('center', center);
+			var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo($scope.map);
+			marker.bindPopup('<b>You are here!</b>').openPopup();
+			setTitle('');
 		}, function(err){ console.log(err); });
 	};
 	
