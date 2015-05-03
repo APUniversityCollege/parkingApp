@@ -1,0 +1,5 @@
+{
+  "cordovaPlugins": [
+    "org.apache.cordova.geolocation"
+  ]
+}
