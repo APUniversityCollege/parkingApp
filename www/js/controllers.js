@@ -1,31 +1,39 @@
 angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 
 .controller('MapController', function($scope, $rootScope, $timeout, StorageService, AddressService, ZoneService, TariffService){
-	var c = {};
-	if($rootScope.foundAddress){
-		c = $rootScope.foundAddress;
+	// Give the map the height of the window without the overlay bars
+	$('#map').height($( window ).height()-$('.tabs-icon-top').outerHeight()-$('#title').outerHeight());
+	// Place map beneath the title bar
+	$('#map').css('margin-top', $('#title').outerHeight());
+	var center = {};
+	if ($rootScope.foundAddress) {
+		//$scope.map.setView($rootScope.foundAddress
+		center = $rootScope.foundAddress;
+		zoom = 16;
 	}
-	else{
-		c.lat = 51.221311;
-		c.lng = 4.399160;
+	else { // Grote Markt, Antwerpen
+		center.lat = 51.221311;
+		center.lng = 4.399160;
+		zoom = 12;
 	}
 	
-	$scope.map = new L.Map('map'); 
-	L.tileLayer('http://otile4.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png', {
-            maxZoom: 20,
-			zoomControl: false,
-			doubleClickZoom: false,
-			scrollWheelZoom: true,
-			touchZoom: true,
-			path: {
-				weight: 10,
-				color: '#800000',
-				opacity: 1
-			}
-         }).addTo($scope.map);
-         
-    $scope.map.attributionControl.setPrefix('');
-    $scope.map.setView(new L.LatLng(c.lat, c.lng), 12);
+	//$scope.map = new L.Map('map');
+	$scope.map = new L.map('map', {
+		center: center,
+		zoom: zoom,
+		maxZoom: 20,
+		zoomControl: false,
+		doubleClickZoom: false,
+		scrollWheelZoom: true,
+		touchZoom: true,
+		/*path: {
+			weight: 10,
+			color: '#800000',
+			opacity: 1
+		}*/
+	});
+	L.tileLayer('http://otile4.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png', {}).addTo($scope.map);
+	$scope.map.attributionControl.setPrefix('');
 	
 	// Request object parkingZones from StorageService
 	// If the object does not yet exist, then pull it from server
@@ -37,14 +45,13 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 			colourParkingZones(z);
 		});
 	}
-	else{
+	else {
 		colourParkingZones(zones);
 	}
 
 	// Colour the parking zones
 	function colourParkingZones(zones){
 		for(var i = 0; i < zones.length; i++){
-			//console.log(zones[i].tariefkleur);
 			var coordinates = JSON.parse(zones[i].geometry).coordinates[0];
 			var polygonPoints = [];
 			for(var j = 0; j < coordinates.length; j++){
@@ -81,11 +88,18 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 			var polygon = new L.Polygon(polygonPoints,{
 				color: colour,
 				fillColor: fillColour,
-				fillOpacity: 0.5
+				fillOpacity: 0.3
 			});
 			$scope.map.addLayer(polygon);
 		}
 	}
+	
+	var circlecenter = L.circle(center, 500, {
+		color: 'blue',
+		fillColor: '#00F',
+		fillOpacity: 0.5
+	});
+	$scope.map.addLayer(circlecenter);
 	
 	// normal click
 	$scope.map.on('click', function(e){
@@ -98,16 +112,23 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 	// right-click
 	//$scope.map.on('contextmenu', function(e){ });
 
+	$scope.map.on('zoomstart', function(e) {
+	});
+	$scope.map.on('zoomend', function(e) {
+	});
+
 	setTitle = function(msg){
 		document.getElementById('title').innerHTML = '<h1 class="title">' + msg + '</h1>';
 	};
 
 	locate = function(){
+		//$scope.map.locate({setView: true, maxZoom: 16});
 		setTitle('Even geduld, positie wordt bepaald...');
-		navigator.geolocation.getCurrentPosition(function(position){
-			var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo($scope.map);
-			marker.bindPopup('<b>U bent hier</b>').openPopup();
-			setTitle('');
+		navigator.geolocation.getCurrentPosition(function(position) {
+			var marker = L.marker([position.coords.latitude, position.coords.longitude]).addTo($scope.map); // Create marker
+			marker.bindPopup('<b>U bent hier</b>').openPopup(); // Bind popup to marker
+			$scope.map.setView([position.coords.latitude, position.coords.longitude], 12); // Set view of map to location and change zoom
+			setTitle(''); // Empty title bar
 		}, function(err){ console.log(err); });
 	};
 	
@@ -155,7 +176,7 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 		}
 		return isInside;
 	};
-
+	
 	addMarker = function(e) {
 		var lat = e.latlng.lat;
 		var lng = e.latlng.lng;
@@ -181,24 +202,28 @@ angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
 			}
 			else {
 				popup.setLatLng(e.latlng).setContent('Geen tarief').openOn($scope.map);
-			}		
+			}
 		});
 	};
 })
 
-.controller('DataController', function($scope, $rootScope, $timeout, $http, $location, AddressService){
+.controller('SearchController', function($scope, $rootScope, $timeout, $http, $location, AddressService) {
 	setTitle = function(msg){
 		document.getElementById('title').innerHTML = '<h1 class="title">' + msg + '</h1>';
 	};
 	$scope.search = {};
-	$rootScope.foundAddress = {};
+	$rootScope.foundAddress = undefined;
 	
 	$scope.searchAddress = function() {
-		console.log($scope.search.address);
 		AddressService.getCoordinates($scope.search.address).then(function(data) {
+			$rootScope.foundAddress = {};
 			$rootScope.foundAddress.lat = parseFloat(data[0].lat);
 			$rootScope.foundAddress.lng = parseFloat(data[0].lon);
 			$location.path("#/tab/map");
 		});
 	}
+})
+
+.controller('DataController', function($scope, $rootScope, $location) {
+	$scope.airplaneMode = true;
 });
