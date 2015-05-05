@@ -1,4 +1,4 @@
-angular.module('parkingapp', ['ionic', 'parkingapp.services', 'parkingapp.controllers', 'leaflet-directive'])
+angular.module('parkingapp', ['ionic', 'parkingapp.services', 'parkingapp.controllers'])
 
 .config(function($stateProvider, $urlRouterProvider) {
 	$stateProvider

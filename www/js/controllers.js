@@ -1,6 +1,6 @@
-angular.module('parkingapp.controllers', ['leaflet-directive', 'ionic'])
+angular.module('parkingapp.controllers', ['ionic'])
 
-.controller('MapController', function($scope, $rootScope, $timeout, StorageService, AddressService, ZoneService, TariffService){
+.controller('MapController', function($scope, $rootScope, StorageService, AddressService, ZoneService, TariffService){
 	// Give the map the height of the window without the overlay bars
 	$('#map').height($( window ).height()-$('.tabs-icon-top').outerHeight()-$('#title').outerHeight());
 	// Place map beneath the title bar
