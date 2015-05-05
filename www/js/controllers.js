@@ -207,7 +207,7 @@ angular.module('parkingapp.controllers', ['ionic'])
 	};
 })
 
-.controller('SearchController', function($scope, $rootScope, $timeout, $http, $location, AddressService) {
+.controller('SearchController', function($scope, $rootScope, $http, AddressService) {
 	setTitle = function(msg){
 		document.getElementById('title').innerHTML = '<h1 class="title">' + msg + '</h1>';
 	};
