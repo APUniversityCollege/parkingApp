@@ -6,12 +6,11 @@ angular.module('parkingapp.controllers', ['ionic'])
 	// Place map beneath the title bar
 	$('#map').css('margin-top', $('#title').outerHeight());
 	var center = {};
-	if ($rootScope.foundAddress) {
-		//$scope.map.setView($rootScope.foundAddress
+	if($rootScope.foundAddress){
 		center = $rootScope.foundAddress;
 		zoom = 16;
 	}
-	else { // Grote Markt, Antwerpen
+	else{ // Grote Markt, Antwerpen
 		center.lat = 51.221311;
 		center.lng = 4.399160;
 		zoom = 12;
@@ -167,25 +166,25 @@ angular.module('parkingapp.controllers', ['ionic'])
 	addMarker = function(e){
 		var lat = e.latlng.lat;
 		var lng = e.latlng.lng;
-		var tariff;
+		var color;
 		var popup = L.popup();
 		for(var i = 0; i < zones.length; i++) {
 			var geo = JSON.parse(zones[i].geometry);
 			var coordinates = geo.coordinates[0];
 			if(inPolygon([lng, lat], coordinates)) {
-				tariff = zones[i].tariefkleur;
+				color = zones[i].tariefkleur;
 				break;
 			}
 		}
 
 		AddressService.getAddress(lat, lng).then(function(data) {
-			if(data.address.neighbourhood != undefined && tariff != undefined) {
-				var t = TariffService.getTariffText(tariff);
-				popup.setLatLng(e.latlng).setContent(data.address.neighbourhood + ' : ' + t).openOn($scope.map);
+			if(data.address.neighbourhood != undefined && color != undefined) {
+				var tariff = TariffService.getTariffText(color);
+				popup.setLatLng(e.latlng).setContent(data.address.neighbourhood + ' : ' + tariff).openOn($scope.map);
 			}
-			else if(data.address.city_district != undefined && tariff != undefined) {
-				var t = TariffService.getTariffText(tariff);
-				popup.setLatLng(e.latlng).setContent(data.address.city_district + ' : ' + t).openOn($scope.map);
+			else if(data.address.city_district != undefined && color != undefined) {
+				var tariff = TariffService.getTariffText(color);
+				popup.setLatLng(e.latlng).setContent(data.address.city_district + ' : ' + tariff).openOn($scope.map);
 			}
 			else {
 				popup.setLatLng(e.latlng).setContent('Geen tarief').openOn($scope.map);
@@ -194,14 +193,14 @@ angular.module('parkingapp.controllers', ['ionic'])
 	};
 })
 
-.controller('SearchController', function($scope, $rootScope, $http, $location, AddressService) {
+.controller('SearchController', function($scope, $rootScope, $http, $location, AddressService){
 	setTitle = function(msg){
 		document.getElementById('title').innerHTML = '<h1 class="title">' + msg + '</h1>';
 	};
 	$scope.search = {};
 	$rootScope.foundAddress = undefined;
 
-	$scope.searchAddress = function() {
+	$scope.searchAddress = function(){
 		AddressService.getCoordinates($scope.search.address).then(function(data) {
 			$rootScope.foundAddress = {};
 			$rootScope.foundAddress.lat = parseFloat(data[0].lat);
@@ -212,9 +211,8 @@ angular.module('parkingapp.controllers', ['ionic'])
 })
 
 .controller('DataController', function($scope) {
-		$scope.a = {};
-		$scope.a.airplaneMode = true;
+		$scope.airplaneMode = true;
 		$scope.change = function(){
-			  console.log($scope.a.airplaneMode);
+			  console.log($scope.airplaneMode);
   }
 });

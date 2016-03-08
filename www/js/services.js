@@ -35,7 +35,7 @@ angular.module('parkingapp.services', [])
 }])
 
 .factory('TariffService', function() {
-	var tarieven = [
+	var tariffs = [
 		{'kleur': 'Rood', 'max': 3, 'start': 9, 'einde': 22, 'dagen': [0, 1, 2, 3, 4, 5],
 		'tarief': [1.60, 2.70, 3.80]},
 		{'kleur': 'Donkergroen', 'max': 10, 'start': 9, 'einde': 19, 'dagen': [0, 1, 2, 3, 4, 5],
@@ -51,31 +51,30 @@ angular.module('parkingapp.services', [])
 	];
 
 	return {
-		getTariffText: function(zone) {
-			var tarief;
-			$.each(tarieven, function(key, value) {
-				if (zone == value.kleur) {
-					tarief = value;
-					return false;
+		getTariffText: function(color){
+			var tariff;
+			$.each(tariffs, function(key, value){
+				if(color == value.kleur){
+					tariff = value;
 				}
 			});
-			var text = tarief.kleur;
+			var text = tariff.kleur;
 			var now = new Date();
-			if ($.inArray(now.getDay(), tarief.dagen)) {
-				if (now.getHours() >= tarief.start && now.getHours() < tarief.einde) {
-					var duration = tarief.einde - now.getHours();
+			if($.inArray(now.getDay(), tariff.dagen)){
+				if(now.getHours() >= tariff.start && now.getHours() < tariff.einde){
+					var duration = tariff.einde - now.getHours();
 					var cost = 0;
-					if (duration > tarief.max) { duration = tarief.max; }
-					for (var i = 0; i < duration; i++) {
-						if (i < tarief.tarief.length) {
-							cost += tarief.tarief[i];
+					if(duration > tariff.max) { duration = tariff.max; }
+					for(var i = 0; i < duration; i++){
+						if(i < tariff.tarief.length){
+							cost += tariff.tarief[i];
 						}
-						else {
-							cost += tarief.tarief[tarief.tarief.length-1];
+						else{
+							cost += tariff.tarief[tariff.tarief.length-1];
 						}
 					}
-					if (tarief.dagticket < cost) {
-						text += '<br/>Neem een dagticket voor maar € ' + tarief.dagticket.toFixed(2);
+					if(tariff.dagticket < cost) {
+						text += '<br/>Neem een dagticket voor maar € ' + tariff.dagticket.toFixed(2);
 					}
 					else {
 						text += '<br/>Maximale parkeerduur: ' + duration;
