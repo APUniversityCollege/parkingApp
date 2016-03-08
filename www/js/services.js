@@ -35,7 +35,6 @@ angular.module('parkingapp.services', [])
 }])
 
 .factory('TariffService', function() {
-	//["Rood", "Lichtgroen", "Donkergroen", "Geel", "Oranje", "Blauw"]
 	var tarieven = [
 		{'kleur': 'Rood', 'max': 3, 'start': 9, 'einde': 22, 'dagen': [0, 1, 2, 3, 4, 5],
 		'tarief': [1.60, 2.70, 3.80]},
@@ -50,7 +49,7 @@ angular.module('parkingapp.services', [])
 		{'kleur': 'Blauw', 'max': 2, 'start': 9, 'einde': 18, 'dagen': [0, 1, 2, 3, 4, 5],
 		'tarief': [0]}
 	];
-	
+
 	return {
 		getTariffText: function(zone) {
 			var tarief;
@@ -92,16 +91,16 @@ angular.module('parkingapp.services', [])
 .factory('StorageService', ['$window', function($window){
    return{
 	  set: function(key, value){
-		$window.localStorage[key] = value;
+		     $window.localStorage[key] = value;
 	  },
 	  get: function(key, defaultValue){
-		return $window.localStorage[key] || defaultValue;
+		     return $window.localStorage[key] || defaultValue;
 	  },
 	  setObject: function(key, value){
-		$window.localStorage[key] = JSON.stringify(value);
+		     $window.localStorage[key] = JSON.stringify(value);
 	  },
 	  getObject: function(key){
-		return JSON.parse($window.localStorage[key] || '{}');
+		     return JSON.parse($window.localStorage[key] || '{}');
 	  }
    }
 }]);

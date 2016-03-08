@@ -1,1 +1,7 @@
-{}
+{
+  "cordovaPlugins": [],
+  "cordovaPlatforms": [
+    "android",
+    "ios"
+  ]
+}
